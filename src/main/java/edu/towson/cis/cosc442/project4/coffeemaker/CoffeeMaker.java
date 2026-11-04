@@ -4,7 +4,7 @@ public class CoffeeMaker {
     /** Array of recipes in coffee maker */
     private Recipe[] recipeArray;
     /** Number of recipes in coffee maker */
-    private final int NUM_RECIPES = 4;
+    private final int NUM_RECIPES = 3;
     /** Array describing if the array is full */
     private boolean[] recipeFull;
     /** Inventory of the coffee maker */
@@ -69,8 +69,9 @@ public class CoffeeMaker {
         boolean canDeleteRecipe = false;
         if (r != null) {
             for (int i = 0; i < NUM_RECIPES; i++) {
-                if (r.equals(recipeArray[i])) {
-                    recipeArray[i] = recipeArray[i];
+                if (r.equals(recipeArray[i]) && recipeFull[i]) {
+                    recipeArray[i] = new Recipe();
+                    recipeFull[i]= false;
                     canDeleteRecipe = true;
                 }
             }
@@ -86,21 +87,25 @@ public class CoffeeMaker {
      * @return true if the recipe was successfully edited, false otherwise
      */
     public boolean editRecipe(Recipe oldRecipe, Recipe newRecipe) {
-        boolean canEditRecipe = false;
-        for (int i = 0; i < NUM_RECIPES; i++) {
-            if (recipeArray[i].getName() != null) {
-                if (newRecipe.equals(recipeArray[i])) {
-                    recipeArray[i] = new Recipe();
-                    if (addRecipe(newRecipe)) {
-                        canEditRecipe = true;
-                    } else {
-                        canEditRecipe = false;
-                    }
-                }
-            }
+        if(oldRecipe == null || newRecipe == null){
+            return false;
         }
-        return canEditRecipe;
+        //Recipe names cannot be changed
+        if (oldRecipe.getName() == null || !oldRecipe.getName().equals(newRecipe.getName())){
+            return false;
+        }
+        //Locate and update the original recipe
+        for(int i = 0; i < NUM_RECIPES; i++){
+            if (recipeFull[i] && oldRecipe.equals(recipeArray[i])) {
+            recipeArray[i] = newRecipe;
+            return true;
+        }
     }
+
+    return false;
+}
+        
+
 
     /**
      * Adds specified amounts of ingredients to the inventory if all amounts are
@@ -114,7 +119,7 @@ public class CoffeeMaker {
      */
     public boolean addInventory(int amtCoffee, int amtMilk, int amtSugar, int amtChocolate) {
         boolean canAddInventory = true;
-        if (amtCoffee < 0 || amtMilk < 0 || amtSugar > 0 || amtChocolate < 0) {
+        if (amtCoffee < 0 || amtMilk < 0 || amtSugar < 0 || amtChocolate < 0) {
             canAddInventory = false;
         } else {
             inventory.setCoffee(inventory.getCoffee() + amtCoffee);
@@ -144,24 +149,34 @@ public class CoffeeMaker {
      *         coffee cannot be made
      */
     public int makeCoffee(Recipe r, int amtPaid) {
-        boolean canMakeCoffee = true;
-        if (amtPaid < r.getPrice()) {
-            canMakeCoffee = false;
-        }
-        if (!inventory.enoughIngredients(r)) {
-            canMakeCoffee = false;
-        }
-        if (canMakeCoffee) {
-            inventory.setCoffee(inventory.getCoffee() + r.getAmtCoffee());
-            inventory.setMilk(inventory.getMilk() - r.getAmtMilk());
-            inventory.setSugar(inventory.getSugar() - r.getAmtSugar());
-            inventory.setChocolate(inventory.getChocolate() - r.getAmtChocolate());
-            return amtPaid - r.getPrice();
-        } else {
-            return amtPaid;
-        }
-    }
+       if(r == null){
+        return amtPaid;
+       }
+       //find requested recipe in book
+       Recipe selectedRecipe = null;
 
+       for (int i =0; i < NUM_RECIPES; i++){
+        if(recipeFull[i] && r.equals(recipeArray[i])){
+            selectedRecipe = recipeArray[i];
+            break;
+        }
+       }
+       if(selectedRecipe == null){
+        return amtPaid;
+       }
+// Refund if recipe is not registered
+       if(amtPaid < selectedRecipe.getPrice() || !inventory.enoughIngredients(selectedRecipe)){
+        return amtPaid;
+       }
+//Consume ingredients
+ inventory.setCoffee(inventory.getCoffee() - selectedRecipe.getAmtCoffee());
+    inventory.setMilk(inventory.getMilk() - selectedRecipe.getAmtMilk());
+    inventory.setSugar(inventory.getSugar() - selectedRecipe.getAmtSugar());
+    inventory.setChocolate(inventory.getChocolate() - selectedRecipe.getAmtChocolate());
+
+    return amtPaid - selectedRecipe.getPrice();
+    
+      }
     /**
      * Returns the array of recipes stored in the coffee maker.
      * 
