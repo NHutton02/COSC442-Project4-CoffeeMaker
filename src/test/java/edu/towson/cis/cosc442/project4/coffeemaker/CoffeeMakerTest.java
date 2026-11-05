@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 
-@Disabled("Temporary Task 4 mutation quality gate demonstration")
+
+
 class CoffeeMakerTest {
 
     private CoffeeMaker maker;
