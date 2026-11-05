@@ -169,7 +169,7 @@ public class CoffeeMaker {
         return amtPaid;
        }
 //Consume ingredients
- inventory.setCoffee(inventory.getCoffee() - selectedRecipe.getAmtCoffee());
+ inventory.setCoffee(inventory.getCoffee() + selectedRecipe.getAmtCoffee());
     inventory.setMilk(inventory.getMilk() - selectedRecipe.getAmtMilk());
     inventory.setSugar(inventory.getSugar() - selectedRecipe.getAmtSugar());
     inventory.setChocolate(inventory.getChocolate() - selectedRecipe.getAmtChocolate());
